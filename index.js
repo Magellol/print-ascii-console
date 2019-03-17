@@ -1,72 +1,65 @@
-// console.log(
-//   `%c
-//  █████╗ ██╗   ██╗████████╗ ██████╗ ███╗   ███╗ █████╗ ████████╗     █████╗ ██╗
-// ██╔══██╗██║   ██║╚══██╔══╝██╗   ██╗████╗ ████║██╔══██╗╚══██╔══╝    ██╔══██╗██║
-// ███████║██║   ██║   ██║   ██║   ██║██╔████╔██║███████║   ██║       ███████║██║
-// ██╔══██║██║   ██║   ██║   ██║   ██║██║╚██╔╝██║██╔══██║   ██║ █████╗██╔══██║██║
-// ██║  ██║╚██████╔╝   ██║   ╚██████╔╝██║ ╚═╝ ██║██║  ██║   ██║ ╚════╝██║  ██║██║
-// ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝       ╚═╝  ╚═╝╚═╝
-//   `,
-//   'font-family:monospace;color:#1976d2;font-size:12px;',
-// );
+const chalk = require('chalk');
 
-const lines = [
+const AUTOMAT_BLUE = '#32B3DB';
+
+const toPrint = [
+  `=================================================================================`,
   `   █████╗  ██╗   ██╗████████╗ ██████╗ ███╗   ███╗ █████╗ ████████╗     █████╗ ██╗`,
   `  ██╔══██╗ ██║   ██║╚══██╔══╝██╗   ██╗████╗ ████║██╔══██╗╚══██╔══╝    ██╔══██╗██║`,
   `  ███████║ ██║   ██║   ██║   ██║   ██║██╔████╔██║███████║   ██║       ███████║██║`,
   `  ██╔══██║ ██║   ██║   ██║   ██║   ██║██║╚██╔╝██║██╔══██║   ██║ █████╗██╔══██║██║`,
   `  ██║  ██║ ╚██████╔╝   ██║   ╚██████╔╝██║ ╚═╝ ██║██║  ██║   ██║ ╚════╝██║  ██║██║`,
   `  ╚═╝  ╚═╝  ╚═════╝    ╚═╝    ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝       ╚═╝  ╚═╝╚═╝`,
+  `=================================================================================`,
 ];
 
-function* getLines(iterable) {
-  for (l of iterable) {
-    yield l;
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
+function* createIterator(iterable) {
+  for (const i of iterable) {
+    yield i;
   }
 }
 
-const replaceLine = value => {
-  process.stdout.write(value + '\r');
-};
-
-const iterator = getLines(lines);
-
-const processItem = (intervalSpeed = 10) => () => {
+function createIntervalP(iterator, fn, interval) {
   return new Promise(resolve => {
-    const { value, done } = iterator.next();
-    if (done === true) {
-      // return clearInterval(intervalId);
-      return;
-    }
-
-    const startLength = 10;
-    const [start, end] = [
-      value.substr(0, startLength),
-      value.substr(startLength + 1),
-    ];
-
-    replaceLine(start);
-    const characters = getLines(end);
-
-    let baseValue = start;
     const intervalId = setInterval(() => {
-      const { value: char, done: finish } = characters.next();
-      if (finish === true) {
+      const { value, done } = iterator.next();
+
+      if (done) {
         clearInterval(intervalId);
-        process.stdout.write('\n');
         return resolve();
       }
 
-      baseValue += char;
-      replaceLine(baseValue);
-    }, intervalSpeed);
+      fn(value);
+    }, interval);
   });
-};
+}
 
-console.log('\n')
-processItem()()
-  .then(processItem(20))
-  .then(processItem(30))
-  .then(processItem(5))
-  .then(processItem(12))
-  .then(processItem(10));
+function createLogger(shouldPrintNewLine) {
+  const accumulated = [];
+
+  return value => {
+    accumulated.push(value);
+    process.stdout.write(
+      chalk.hex(AUTOMAT_BLUE).bgBlack(accumulated.join('')) + '\r',
+    );
+    if (shouldPrintNewLine(accumulated)) {
+      process.stdout.write('\n');
+    }
+  };
+}
+
+async function run(lines) {
+  for (const line of lines) {
+    await createIntervalP(
+      createIterator(line),
+      createLogger(acc => acc.length === line.length),
+      getRandomInt(25),
+    );
+  }
+}
+
+run(toPrint);
