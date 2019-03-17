@@ -38,7 +38,7 @@ function createIntervalP(iterator, fn, interval) {
   });
 }
 
-function createLogger(shouldPrintNewLine) {
+function createLogger(shouldEndLineBuffer) {
   const accumulated = [];
 
   return value => {
@@ -46,7 +46,7 @@ function createLogger(shouldPrintNewLine) {
     process.stdout.write(
       chalk.hex(AUTOMAT_BLUE).bgBlack(accumulated.join('')) + '\r',
     );
-    if (shouldPrintNewLine(accumulated)) {
+    if (shouldEndLineBuffer(accumulated)) {
       process.stdout.write('\n');
     }
   };
