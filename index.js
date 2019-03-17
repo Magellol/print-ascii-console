@@ -2,6 +2,7 @@ const chalk = require('chalk');
 
 const AUTOMAT_BLUE = '#32B3DB';
 
+// "Font" source: https://github.com/mui-org/material-ui-docs/blob/latest/pages/_app.js#L37-L42
 const toPrint = [
   `=================================================================================`,
   `   █████╗  ██╗   ██╗████████╗ ██████╗ ███╗   ███╗ █████╗ ████████╗     █████╗ ██╗`,
